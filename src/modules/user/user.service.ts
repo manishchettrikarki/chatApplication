@@ -38,6 +38,7 @@ export class UserService implements IUserService {
     return updatedProfile;
   }
 
+  //
   async getProfile(userId: string) {
     return this.#profileModel
       .findOne({ user: userId })

@@ -15,11 +15,9 @@ const client = new MongoClient(uri, {
 
 export async function dbConnect() {
   try {
-    // Connect the client to the server	(optional starting in v4.7)
     await mongoose.connect(uri);
     console.log("Connected");
   } finally {
-    // Ensures that the client will close when you finish/error
     await client.close();
   }
 }

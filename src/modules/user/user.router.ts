@@ -12,7 +12,7 @@ userProfileRouter.get("/profile", authMiddleware, userController.getProfile);
 userProfileRouter.patch(
   "/profile",
   authMiddleware,
-  upload.single("avatar"), // <-- handle file
-  validateBody(updateUserSchema), // <-- validate rest of fields
+  upload.single("avatar"),
+  validateBody(updateUserSchema),
   userController.updateProfile
 );

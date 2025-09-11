@@ -1,41 +1,45 @@
-// chat.controller.ts
-import { Request, Response } from "express";
-import { IChatService } from "./message.service";
+import { Response, NextFunction } from "express";
+import { IMessageService } from "./message.service";
+import { SendMessageSchema } from "./message.validation";
+import { AuthenticatedRequest } from "../../types/authenticated.type";
 
-export class ChatController {
-  #service: IChatService;
+export class MessageController {
+  #service: IMessageService;
 
-  constructor(service: IChatService) {
+  constructor(service: IMessageService) {
     this.#service = service;
   }
 
-  //
-  getMessages = async (req: Request, res: Response) => {
+  sendMessage = async (
+    req: AuthenticatedRequest,
+    res: Response,
+    next: NextFunction
+  ) => {
     try {
-      const { userId } = req.params;
-      const currentUserId = req.user.id;
-      const messages = await this.#service.getMessages(currentUserId, userId);
-      res.json(messages);
-    } catch (err: any) {
-      res.status(500).json({ message: err.message });
+      const senderId = req?.user?.id as string;
+      const data: SendMessageSchema = req.body;
+
+      const message = await this.#service.sendMessage(senderId, data);
+
+      return res.json({ success: true, message });
+    } catch (error) {
+      next(error);
     }
   };
 
-  //
-  sendMessage = async (req: Request, res: Response) => {
+  getMessagesWithUser = async (
+    req: AuthenticatedRequest,
+    res: Response,
+    next: NextFunction
+  ) => {
     try {
-      const { userId } = req.params;
-      const { text } = req.body;
-      const currentUserId = req.user.id;
+      const userId = req?.user?.id as string;
+      const otherUserId = req.params.userId;
 
-      const message = await this.#service.sendMessage(
-        currentUserId,
-        userId,
-        text
-      );
-      res.status(201).json(message);
-    } catch (err: any) {
-      res.status(500).json({ message: err.message });
+      const messages = await this.#service.getMessages(userId, otherUserId);
+      return res.json({ success: true, messages });
+    } catch (error) {
+      next(error);
     }
   };
 }

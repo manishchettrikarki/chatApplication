@@ -1,34 +1,30 @@
-// chat.service.ts
+import mongoose from "mongoose";
+import { SendMessageSchema } from "./message.validation";
+import { IMessage } from "./model/message.schema";
+import { MessageModel } from "./model/message.model";
 
-import { IMessage, MessageModel } from "./model/message.model";
-
-export interface IChatService {
-  sendMessage(
-    senderId: string,
-    receiverId: string,
-    text: string
-  ): Promise<IMessage>;
-  getMessages(currentUserId: string, otherUserId: string): Promise<IMessage[]>;
+export interface IMessageService {
+  sendMessage(senderId: string, data: SendMessageSchema): Promise<IMessage>;
+  getMessages(userId: string, otherUserId: string): Promise<IMessage[]>;
 }
 
-export class ChatService implements IChatService {
-  async sendMessage(senderId: string, receiverId: string, text: string) {
-    const msg = await MessageModel.create({
-      sender: senderId,
-      receiver: receiverId,
-      text,
+export class MessageService implements IMessageService {
+  async sendMessage(senderId: string, data: SendMessageSchema) {
+    const message = new MessageModel({
+      sender: new mongoose.Types.ObjectId(senderId),
+      receiver: new mongoose.Types.ObjectId(data.receiverId),
+      text: data.text,
     });
-    return msg.populate("sender receiver", "username email fullName");
+    await message.save();
+    return message;
   }
 
-  async getMessages(currentUserId: string, otherUserId: string) {
+  async getMessages(userId: string, otherUserId: string) {
     return MessageModel.find({
       $or: [
-        { sender: currentUserId, receiver: otherUserId },
-        { sender: otherUserId, receiver: currentUserId },
+        { sender: userId, receiver: otherUserId },
+        { sender: otherUserId, receiver: userId },
       ],
-    })
-      .sort({ createdAt: 1 })
-      .populate("sender receiver", "username email fullName");
+    }).sort({ createdAt: 1 });
   }
 }

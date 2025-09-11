@@ -1,14 +1,15 @@
-// chat.routes.ts
 import { Router } from "express";
-import { ChatService } from "./message.service";
-import { ChatController } from "./message.controller";
 import { authMiddleware } from "../../middleware/authMiddleware";
+import { messageController } from ".";
 
-const chatRouter = Router();
-const chatService = new ChatService();
-const chatController = new ChatController(chatService);
+export const messageRouter = Router();
 
-chatRouter.get("/:userId", authMiddleware, chatController.getMessages);
-chatRouter.post("/:userId", authMiddleware, chatController.sendMessage);
+// Send a message
+messageRouter.post("/", authMiddleware, messageController.sendMessage);
 
-export { chatRouter };
+// Get messages with another user
+messageRouter.get(
+  "/:userId",
+  authMiddleware,
+  messageController.getMessagesWithUser
+);

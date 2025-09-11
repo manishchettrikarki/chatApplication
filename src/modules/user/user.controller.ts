@@ -19,12 +19,12 @@ export class UserController {
   ) => {
     try {
       const userId = req?.user?.id;
-      if (!userId) throw "No user found";
+      if (!userId) throw new Error("No user found");
 
       const data = req.body as any;
 
       if (req.file) {
-        data.avatar = `/uploads/${req.file.filename}`; // store relative URL
+        data.avatar = `/uploads/${req.file.filename}`;
       }
 
       const updatedProfile = await this.#service.updateProfile(userId, data);
