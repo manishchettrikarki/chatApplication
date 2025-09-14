@@ -1,14 +1,11 @@
+import cors from "cors";
 import express from "express";
 import { appRouter } from "./router";
-import bodyParser from "body-parser";
-import cors from "cors";
 
 //
 export const app = express();
 app.use(cors());
-
-//
-app.use(bodyParser.json());
+app.use(express.json());
 
 // Health check route
 app.get("/health", (_req, res) => {

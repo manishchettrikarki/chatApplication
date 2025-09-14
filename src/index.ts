@@ -2,40 +2,28 @@ import dotenv from "dotenv";
 dotenv.config();
 
 import { createServer } from "http";
-import { Server as SocketServer } from "socket.io";
-
-import { app } from "./configs/appSetup";
-import { appConfig } from "./utils/constants";
 import { initSocket } from "./socket/socket";
+import { appConfig } from "./utils/constants";
 import { dbConnect } from "./configs/dbConnect";
-
-const port = appConfig.port;
+import { app } from "./configs/appSetup";
 
 async function startServer() {
   try {
-    // Create HTTP server
+    // HTTP server
     const httpServer = createServer(app);
 
-    // Initialize Socket.IO
-    const io = new SocketServer(httpServer, {
-      cors: {
-        origin: "*",
-        methods: ["GET", "POST"],
-      },
-    });
-
-    // Initialize socket logic
-    initSocket(io);
+    // Socket setup
+    initSocket(httpServer);
 
     // Start server
-    httpServer.listen(port, () => {
-      console.log(`Server is running on port ${port}`);
+    httpServer.listen(appConfig.port, () => {
+      console.log(`Server running on port ${appConfig.port}`);
     });
 
-    // Connect to DB
+    // Connect DB
     await dbConnect();
   } catch (error) {
-    console.error(error);
+    console.error("Server start error:", error);
   }
 }
 

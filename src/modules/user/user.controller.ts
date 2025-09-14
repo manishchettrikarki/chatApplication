@@ -18,9 +18,7 @@ export class UserController {
     next: NextFunction
   ) => {
     try {
-      const userId = req?.user?.id;
-      if (!userId) throw new Error("No user found");
-
+      const userId = req?.user?.id || "";
       const data = req.body as any;
 
       if (req.file) {
@@ -46,14 +44,7 @@ export class UserController {
     next: NextFunction
   ) => {
     try {
-      const userId = req?.user?.id;
-
-      console.log(userId);
-
-      //
-      if (!userId) {
-        throw "No user found";
-      }
+      const userId = req?.user?.id || "";
       const profile = await this.#service.getProfile(userId);
 
       if (!profile)

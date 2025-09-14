@@ -3,11 +3,14 @@ import { socketAuthenticate } from "./socket.auth";
 import { MessageService } from "../modules/message/message.service";
 import { UserProfileModel } from "../modules/user/model/user.profile.model";
 
-//
 const onlineUsers = new Map<string, Set<string>>();
 const messageService = new MessageService();
 
-export function initSocket(io: SocketServer) {
+export function initSocket(httpServer: any) {
+  const io = new SocketServer(httpServer, {
+    cors: { origin: "*", methods: ["GET", "POST"] },
+  });
+
   io.use((socket, next) => {
     const token =
       socket.handshake.auth?.token ||
@@ -18,10 +21,7 @@ export function initSocket(io: SocketServer) {
 
     socket.data.user = user;
 
-    //
-    if (!onlineUsers.has(user.id)) {
-      onlineUsers.set(user.id, new Set());
-    }
+    if (!onlineUsers.has(user.id)) onlineUsers.set(user.id, new Set());
     onlineUsers.get(user.id)?.add(socket.id);
 
     next();
@@ -31,50 +31,44 @@ export function initSocket(io: SocketServer) {
     const user = socket.data.user;
     console.log(`User connected: ${user.email}`);
 
-    // Update status to online in DB
+    // Update DB
     UserProfileModel.findOneAndUpdate(
       { user: user.id },
       { status: "online" },
       { new: true }
-    ).catch((err) => console.error("Error updating status:", err));
+    ).catch(console.error);
 
-    //private message
     socket.on("chat:private", async ({ to, text }) => {
-      const senderId = user.id;
-      const msg = await messageService.sendMessage(senderId, {
+      const msg = await messageService.sendMessage(user.id, {
         receiverId: to,
         text,
       });
 
-      // check if online
-      const receiverSockets = onlineUsers.get(to);
-      if (receiverSockets) {
-        receiverSockets.forEach((socketId) =>
-          io.to(socketId).emit("chat:private", msg)
-        );
-      }
+      // emit to receiver if online
+      onlineUsers
+        .get(to)
+        ?.forEach((socketId) => io.to(socketId).emit("chat:private", msg));
+
+      // emit to sender
       socket.emit("chat:private", msg);
     });
 
-    //Disconnecting
     socket.on("disconnect", () => {
       console.log(`User disconnected: ${user.email}`);
-
-      // Remove this socket from user's set
       const userSockets = onlineUsers.get(user.id);
       if (userSockets) {
         userSockets.delete(socket.id);
         if (userSockets.size === 0) {
-          // making user offilne
           onlineUsers.delete(user.id);
-
           UserProfileModel.findOneAndUpdate(
             { user: user.id },
             { status: "offline", lastActive: new Date() },
             { new: true }
-          ).catch((err) => console.error("Error updating status:", err));
+          ).catch(console.error);
         }
       }
     });
   });
+
+  return io;
 }

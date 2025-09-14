@@ -17,7 +17,7 @@ export type LoginUserSchema = z.infer<typeof loginUserSchema>;
 
 //
 export const refreshTokenSchema = z.object({
-  refreshToken: z.string(),
+  refreshToken: z.string({ message: "Refresh token is required" }),
 });
 export type RefreshTokenSchema = z.infer<typeof refreshTokenSchema>;
 

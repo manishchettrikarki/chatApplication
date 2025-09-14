@@ -52,9 +52,6 @@ export class AuthController {
   refresh = async (req: Request, res: Response, next: NextFunction) => {
     try {
       const { refreshToken } = req.body;
-      if (!refreshToken) {
-        return res.status(400).json({ error: "Refresh token required" });
-      }
 
       const token = await this.#service.refresh(refreshToken);
 
