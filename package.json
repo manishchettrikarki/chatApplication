@@ -5,7 +5,7 @@
   "scripts": {
     "build": "tsc",
     "lint": "eslint",
-    "test": "jest --watch",
+    "test": "jest",
     "lint:fix": "eslint --fix",
     "dev": "nodemon --watch 'src/**/*.ts' --exec 'ts-node' src/index.ts",
     "prepare": "husky"
