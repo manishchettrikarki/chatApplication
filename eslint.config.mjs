@@ -1,23 +1,22 @@
-import { defineConfig } from "eslint/config";
-import globals from "globals";
+import js from "@eslint/js";
+import tseslint from "typescript-eslint";
 
-export default defineConfig({
-  root: true,
-  env: {
-    node: true,
-    es2025: true,
+export default [
+  js.configs.recommended,
+
+  ...tseslint.configs.recommended,
+
+  {
+    ignores: ["dist/**", "node_modules/**", "*.config.js", "*.config.mjs"],
+    languageOptions: {
+      ecmaVersion: "latest",
+      sourceType: "module",
+    },
+    rules: {
+      "no-unused-vars": "warn",
+      "no-console": "off",
+      eqeqeq: "error",
+      "@typescript-eslint/no-unused-vars": ["warn"],
+    },
   },
-  parser: "@typescript-eslint/parser",
-  parserOptions: {
-    ecmaVersion: "latest",
-    sourceType: "module",
-  },
-  plugins: ["@typescript-eslint"],
-  extends: ["eslint:recommended", "plugin:@typescript-eslint/recommended"],
-  rules: {
-    // Add custom rules here
-    "@typescript-eslint/no-unused-vars": ["error", { argsIgnorePattern: "^_" }],
-    "no-console": "off",
-  },
-  globals: globals.node,
-});
+];
